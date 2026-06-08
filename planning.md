@@ -162,7 +162,69 @@ flowchart LR
 
 **Milestone 3 — Ingestion and chunking:**
 
-milestone 3
+### Goal
+
+The goal of Milestone 3 was to build the first part of the RAG pipeline: loading documents, cleaning them, and splitting them into chunks that can later be embedded and retrieved. This milestone focuses only on **Document Ingestion** and **Chunking**, not embeddings or generation yet.
+
+The pipeline follows this structure:
+
+```text
+Raw documents → Cleaned documents → Chunks → Manual inspection
+```
+
+**Folder Structure**
+The project uses the existing `documents/` folder from the base repository.
+
+```
+AI201-PROJECT-...
+├── documents/
+│   ├── raw/
+│   ├── cleaned/
+│   └── chunks/
+├── src/
+│   └── document_pipeline.py
+├── planning.md
+├── README.md
+└── requirements.txt
+```
+
+**Document Ingestion**
+
+All source documents are saved as `.txt` files in `documents/raw/`. These include official CWRU off-campus housing resources, transportation pages, and Reddit student discussion threads. Each document includes source information when possible, such as the title and URL.
+
+**Cleaning**
+
+The script cleans each document by removing HTML tags, HTML entities, extra whitespace, and common boilerplate such as ads, cookie text, login prompts, and share buttons. Cleaned files are saved in documents/cleaned/.
+
+**Chunking**
+
+The script uses recursive-style chunking. It first tries to split by paragraphs, then by sentences if a section is too long.
+
+Chunk size: about 3,500 characters, roughly 700–900 tokens
+Overlap: about 500 characters, roughly 100–150 tokens
+
+This keeps related housing information together while preserving context across chunk boundaries.
+
+**Chunk Output**
+
+Chunks are saved as JSONL in `documents/chunks/chunks.jsonl`
+
+Each chunk includes
+
+```
+{
+  "chunk_id": "source_file.txt_chunk_0",
+  "source_file": "source_file.txt",
+  "chunk_index": 0,
+  "text": "chunk text here"
+}
+```
+
+
+**Inspection**
+After chunking, the script prints the total number of chunks and 5 random chunks. I inspect these chunks to check that they are readable, substantive, self-contained, and free of HTML artifacts.
+
+
 **Milestone 4 — Embedding and retrieval:**
 
 **Milestone 5 — Generation and interface:**
