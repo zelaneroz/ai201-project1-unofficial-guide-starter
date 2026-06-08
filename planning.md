@@ -161,6 +161,7 @@ flowchart LR
 
 **Milestone 3 — Ingestion and chunking:**
 
+milestone 3
 **Milestone 4 — Embedding and retrieval:**
 
 **Milestone 5 — Generation and interface:**
