@@ -1,15 +1,9 @@
 # Project 1 Planning: The Unofficial Guide
 
-> Write this document before you write any pipeline code.
-> Your spec and architecture diagram are what you'll use to direct AI tools (Claude, Copilot, etc.) to generate your implementation — the more specific they are, the more useful the generated code will be.
-> Update the Retrieval Approach and Chunking Strategy sections if you change your approach during implementation.
-> Update this file before starting any stretch features.
-
----
-
 ## Domain
+Off-campus housing around Case Western Reserve University in Cleveland, OH for undergraduate and graduate students.
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+This domain is valuable because many CWRU students eventually need to find housing beyond university-managed dorms, especially upperclassmen, graduate students, international students, and students staying in Cleveland over the summer. While official university resources may list general housing options or safety guidance, they often do not capture the practical details students actually care about, such as which apartments are affordable, which neighborhoods feel safe at night, and how reliable public transportation is. This knowledge is often spread through word of mouth, Reddit posts, group chats, Facebook groups, and advice from older students, making it useful but difficult to find in one trustworthy place.
 
 ---
 
@@ -20,16 +14,21 @@
 
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | CWRU Off-Campus Housing Website | Official CWRU rental search site for students, faculty, and staff; includes apartment listings, roommate search, and scam/fraud guidance. | https://offcampus.case.edu/ |
+| 2 | CWRU Off-Campus Apartments Search | Current rental listings near CWRU, useful for comparing prices, distance from campus, lease lengths, and amenities. | https://offcampus.case.edu/housing |
+| 3 | CWRU University Housing: Off-Campus Housing | Official overview explaining who can live off campus, how students should begin searching, and financial aid considerations. | https://case.edu/housing/services/campus-housing |
+| 4 | CWRU Living Off Campus for 2026–2027 | Official page for upper-class students considering off-campus housing, including room selection and financial aid notes. | https://case.edu/housing/application-process/returning-students/room-selection-upper-class-students/living-campus-2024-2025 |
+| 5 | CWRU Residential Rentals | CWRU Office of Real Estate page for university-owned rentals near campus, including apartments and houses in University Circle/Little Italy. | https://case.edu/realestate/residential-rentals |
+| 6 | CWRU Transportation | Official transportation page covering shuttles, public transit, campus map, and ways to get around University Circle. | https://case.edu/parking/transportation |
+| 7 | CWRU Graduate Student Life: Getting Around | Useful for grad students; explains parking, shuttles, Safe Ride, walking escorts, and public transit options. | https://case.edu/studentlife/graduate/resources/getting-around |
+| 8 | CWRU Student Parking Permits | Official parking permit information for undergraduate, graduate, commuter, and resident students. | https://case.edu/parking/permits/student-parking-permits |
+| 9 | Reddit r/cwru: Off Campus Housing for International Student | Student discussion about safe, close, affordable housing for an incoming international graduate student. | https://www.reddit.com/r/cwru/comments/1bjmnxs/off_campus_housing_for_international_student/ |
+| 10 | Reddit r/cwru: Off-Campus Housing | Student thread about when to sign leases, how competitive close-to-campus housing is, and what practical factors to consider. | https://www.reddit.com/r/cwru/comments/1hag67j/offcampus_housing/ |
+| 11 | Reddit r/cwru: Bad Landlords? | Student discussion about landlord experiences, warnings, and CWRU property management. | https://www.reddit.com/r/cwru/comments/1alnfo4/bad_landlords/ |
+| 12 | Reddit r/cwru: Grad Student Housing | Graduate student thread asking for budget apartments near campus, with suggestions like Cleveland Heights, Coventry, Little Italy, and Hessler. | https://www.reddit.com/r/cwru/comments/1buc3na/grad_student/ |
+| 13 | Reddit r/cwru: Groups or Places to Find Housing? | Thread about where students look for housing, including Facebook groups, sublets, Craigslist, and Apartments.com. | https://www.reddit.com/r/cwru/comments/v9flox/groups_or_places_to_find_housing/ |
+| 14 | Reddit r/cwru: Housing Within Walking Distance | Student thread asking for housing within walking distance of campus, with comments on Fairchild, Cleveland Clinic area apartments, and demand/waitlists. | https://www.reddit.com/r/cwru/comments/1dlzocf/housing/ |
+| 15 | Reddit r/cwru: Off-Campus Housing for Older First-Year Students | Thread about exceptions to CWRU’s on-campus residency requirement and whether older first-years can live off campus. | https://www.reddit.com/r/cwru/comments/1jz1onu/offcampus_housing_older_first_year_students/ |
 
 ---
 
@@ -41,10 +40,17 @@
      A review-heavy corpus warrants different chunking than a long FAQ. -->
 
 **Chunk size:**
+700–900 tokens per chunk, using recursive chunking by headings, paragraphs, and then sentences when needed.
 
 **Overlap:**
+100–150 tokens of overlap between adjacent chunks.
 
 **Reasoning:**
+This fits my document set because the corpus includes a mix of official CWRU pages, which are longer and structured by headings, and Reddit/forum-style student discussions, which are shorter, opinion-based, and often contain useful details in comments. Recursive chunking is better than simple fixed-size chunking because it can preserve natural structure by splitting first by headings, then paragraphs, then sentences if needed. This matters because housing information is often contextual: a student might mention a neighborhood, price range, safety concern, commute, and landlord experience all in the same paragraph or thread.
+
+For longer official pages, chunks around 700–900 tokens are large enough to keep related information together, such as transportation options, parking rules, or university housing policies. For Reddit threads, I would chunk by post and comment groups when possible, so short comments are not separated from the question they are responding to. The 100–150 token overlap helps when important details span two chunks, such as a student describing both an apartment name and the reason they recommend or avoid it.
+
+If chunks are too small, retrieval might return isolated details without enough context. For example, a search for “safe housing near CWRU for international students” might retrieve only a comment saying “Little Italy is fine” without the explanation about distance, rent, or transportation. If chunks are too large, retrieval might return broad pages or long threads with too many mixed opinions, making it harder to identify the specific answer. Bad retrieval for this project would look like answers that mention housing options but fail to include the practical student concerns, such as affordability, landlord reputation, commute, lease timing, and safety.
 
 ---
 
@@ -56,11 +62,15 @@
      would you weigh in choosing a different embedding model — context length, multilingual
      support, accuracy on domain-specific text, latency? -->
 
-**Embedding model:**
+**Embedding model:** `all-MiniLM-L6-v2` via `sentence-transformers`
 
-**Top-k:**
+**Top-k:** Retrieve the top 5 chunks per query.
 
 **Production tradeoff reflection:**
+
+If this were deployed for real users and cost was not a constraint, I would consider using a stronger embedding model with better retrieval accuracy, longer context support, and stronger performance on informal student language. The system needs to retrieve enough chunks to give the LLM useful context, so I would likely start with top-k = 5 because it balances coverage and focus. If too few chunks are retrieved, the answer may miss important details, such as safety concerns, landlord issues, or transportation options. If too many chunks are retrieved, the LLM may receive noisy or conflicting information and produce a less focused answer.
+
+I would also consider multilingual support because international students may ask housing questions in different languages or use informal phrasing. Semantic search is useful here because it can find relevant chunks based on meaning, even when the query does not use the exact same words as the document. For example, a student asking “Where can I live without a car?” could retrieve chunks about shuttles, walking distance, public transit, and Safe Ride, even if the document does not contain that exact phrase. Since this domain includes both official housing policies and opinion-heavy student reviews, I would prioritize a model that handles messy conversational text well while still retrieving precise facts like apartment names, lease timing, shuttle access, and safety concerns.
 
 ---
 
@@ -71,25 +81,34 @@
      is right or wrong. "What are good dining halls?" is too vague.
      "What do students say about wait times at [dining hall name] during lunch?" is testable. -->
 
-| # | Question | Expected answer |
-|---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| # | Question                                                                                                     | Expected answer                                                                                                                                                            |
+| - | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | What official CWRU resource can students use to search for off-campus apartments and roommates?              | Students can use the CWRU Off-Campus Housing website, which includes rental listings, roommate search, and related housing resources.                                      |
+| 2 | What neighborhoods or areas do students commonly mention for off-campus housing near CWRU?                   | Expected areas include University Circle, Little Italy, Cleveland Heights, Coventry, Hessler, and areas near the Cleveland Clinic.                                         |
+| 3 | What practical factors should students consider before signing an off-campus lease near CWRU?                | Students should consider rent, distance to campus, safety, transportation, parking, landlord reputation, lease timing, roommate needs, and whether utilities are included. |
+| 4 | What transportation options are relevant for students living off campus near CWRU?                           | Relevant options include walking, biking, CWRU shuttles, Safe Ride, public transit/RTA, parking permits, and campus transportation services.                               |
+| 5 | What do student discussions suggest students should be cautious about when choosing landlords or apartments? | Students should look for landlord responsiveness, maintenance quality, lease clarity, hidden fees, safety issues, and negative reviews from other students before signing. |
+
 
 ---
 
 ## Anticipated Challenges
 
-<!-- What could go wrong? Name at least two specific risks with reasoning.
-     Consider: noisy or inconsistent documents, missing source attribution, off-topic
-     retrieval, chunks that split key information across boundaries. -->
+1. **Noisy or inconsistent documents**  
+   Student sources like Reddit threads and comments may be subjective or contradictory. Different students may have opposite opinions about the same apartment, neighborhood, or landlord, so the system could accidentally present one person’s experience as a general fact.
 
-1.
+2. **Off-topic or weak retrieval**  
+   A query about “safe housing near campus” might retrieve general transportation pages or broad apartment listings instead of specific safety-related discussions. This could lead to answers that sound relevant but do not actually address the student’s concern.
 
-2.
+3. **Key information split across chunks**  
+   Important context may be divided between two chunks. For example, one chunk might mention an apartment name, while the next chunk explains the maintenance problems or landlord issues.
+
+4. **Missing or unclear source attribution**  
+   Housing advice can affect where students choose to live, so the system needs to clearly show where information comes from. It should distinguish between official CWRU information and student-reported experiences.
+
+5. **Outdated housing information**  
+   Rent prices, availability, landlord quality, and transportation routes can change over time. The system may retrieve information that was accurate when posted but is no longer reliable.
+
 
 ---
 
@@ -101,19 +120,43 @@
      You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
      You'll use this diagram as context when prompting AI tools to implement each stage. -->
 
+
+```mermaid
+flowchart LR
+    A[Document Ingestion<br/>Sources: CWRU pages, Reddit threads, housing listings<br/>Tools: requests / BeautifulSoup / manual saved files] 
+     --> B[Chunking<br/>Strategy: recursive chunking<br/>Chunk size: 700-900 tokens<br/>Overlap: 100-150 tokens]
+
+    B --> C[Embedding + Vector Store<br/>Embedding model: sentence-transformers/all-MiniLM-L6-v2<br/>Vector store: FAISS or Chroma]
+
+    C --> D[Retrieval<br/>Method: semantic search<br/>Top-k: 5 chunks per query]
+
+    D --> E[Generation<br/>LLM: openai/gpt-oss-20b<br/>Task: answer student housing questions using retrieved chunks]
+
+    E --> F[Final Answer<br/>Includes practical advice + source attribution]
+```
+
 ---
 
 ## AI Tool Plan
 
-<!-- For each part of the pipeline below, describe:
-     - Which AI tool you plan to use (Claude, Copilot, ChatGPT, etc.)
-     - What you'll give it as input (which sections of this planning.md, which requirements)
-     - What you expect it to produce
-     - How you'll verify the output matches your spec
+1. **Document Ingestion**  
+   I plan to use ChatGPT or Claude to help write the document ingestion code. I will give it my **Documents** section, the list of source URLs, and the requirement that each document should be stored with metadata such as source title, URL, document type, and date accessed. I expect it to produce a Python function that can load saved text files or scraped webpage text into a consistent document format. I will verify the output by checking that each source is loaded correctly and that the metadata is preserved.
 
-     "I'll use AI to help me code" is not a plan.
-     "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
-     with my specified chunk size and overlap" is a plan. -->
+2. **Chunking**  
+   I plan to use Claude or ChatGPT to implement the chunking function. I will give it my **Chunking Strategy** section, including the recursive chunking strategy, **700–900 token chunk size**, and **100–150 token overlap**. I expect it to produce a `chunk_text()` function that splits documents by headings, paragraphs, and sentences when possible. I will verify it by printing sample chunks and checking that they are not too short, too long, or cut off in the middle of important housing details.
+
+3. **Embedding + Vector Store**  
+   I plan to use ChatGPT or GitHub Copilot to help implement the embedding and vector database step. I will give it my **Retrieval Approach** section, especially the embedding model `sentence-transformers/all-MiniLM-L6-v2`, and ask it to generate code for embedding chunks and storing them in FAISS or Chroma. I expect it to produce working Python code that converts chunks into vectors and saves them for later search. I will verify this by checking that the number of embeddings matches the number of chunks and that a sample query returns relevant results.
+
+4. **Retrieval**  
+   I plan to use ChatGPT to help write the retrieval function. I will give it my **Retrieval Approach** section and specify that the system should retrieve **top-k = 5** chunks per query using semantic similarity. I expect it to produce a `retrieve(query, top_k=5)` function that returns the most relevant chunks with their source metadata. I will verify it using the five questions from my **Evaluation Plan** and check whether the returned chunks are actually related to each question.
+
+5. **Generation**  
+   I plan to use ChatGPT or Claude to help design the answer-generation prompt. I will give it my **Domain**, **Anticipated Challenges**, and **Evaluation Plan** sections. I expect it to produce a prompt template that tells the LLM to answer only using retrieved chunks, include source attribution, and distinguish between official CWRU information and student-reported experiences. I will verify the output by checking for faithfulness: the answer should reflect the retrieved chunks and should not invent unsupported details.
+
+6. **Evaluation and Debugging**  
+   I plan to use ChatGPT to help create a simple evaluation checklist or script. I will give it my **Evaluation Plan** table and ask it to turn the five test questions into repeatable tests for context relevance and faithfulness. I expect it to produce either a checklist or a small script that records the question, retrieved chunks, generated answer, and whether the answer matches the expected answer. I will verify the results manually by comparing the generated answer against the expected answer and source chunks.
+
 
 **Milestone 3 — Ingestion and chunking:**
 
