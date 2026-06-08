@@ -30,6 +30,7 @@ This domain is valuable because many CWRU students eventually need to find housi
 | 14 | Reddit r/cwru: Housing Within Walking Distance | Student thread asking for housing within walking distance of campus, with comments on Fairchild, Cleveland Clinic area apartments, and demand/waitlists. | https://www.reddit.com/r/cwru/comments/1dlzocf/housing/ |
 | 15 | Reddit r/cwru: Off-Campus Housing for Older First-Year Students | Thread about exceptions to CWRU’s on-campus residency requirement and whether older first-years can live off campus. | https://www.reddit.com/r/cwru/comments/1jz1onu/offcampus_housing_older_first_year_students/ |
 
+
 ---
 
 ## Chunking Strategy
